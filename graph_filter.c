@@ -4,7 +4,7 @@
 
 
 int main() {
-    FILE *arq = fopen("trab1/13.txt", "r");
+    FILE *arq = fopen("/home/matheusm/CLionProjects/trab1/13.txt", "r");
     if (!arq) {
         exit(1);
     }
@@ -17,8 +17,8 @@ int main() {
 
     TG *graph = cria();
     // inserindo nós
-    for (int i = total_nodes; i >= 0; i--) {
-        insere_no(graph, i + 1);
+    for (int i = 0 ; i < total_nodes; i++) {
+        insere_no(graph, i);
     }
 
     // inserindo arestas
@@ -26,18 +26,29 @@ int main() {
     int *aux = malloc(sizeof(int) * total_nodes);
     int from, to;
     while (fscanf(arq, "%d %d", &from, &to) != EOF) {
-        aux[from - 1] += to;
-        aux[to - 1] -= from;
+        aux[from] += to;
+        aux[to] -= from;
         insere_aresta(graph, from, to, 1);
         printf("%d %d\n", from, to);
     }
+    // int oriented = checkOrientation(aux, total_nodes);
 
-    int oriented = checkOrientation(aux, total_nodes);
+    // printBridges(graph,total_nodes);
+    int sc[100];
 
-    printBridges(graph,total_nodes);
-    int sc[1000] = {-1};
-    printaCFC(graph,sc,total_nodes);
+    int oriented = !checkOrientation(aux, total_nodes);
+    int connected = graphStillConnected(graph, total_nodes);
 
+    if (oriented) {
+      show_strong_components(graph,sc,total_nodes);
+    } else {
+        if (connected) {
+            printBridges(graph, total_nodes);
+            printArticulations(graph, total_nodes);
+        } else {
+            printClusters(graph, total_nodes);
+        }
+    }
 
     fclose(arq);
     free(aux);
