@@ -227,7 +227,7 @@ TViz *copyViz(TViz *viz) {
         TViz *aux = malloc(sizeof(TViz));
         aux->id_viz = p->id_viz;
         aux->custo = 1;
-        aux->prox_viz = novo;
+        aux->prox_viz = p->prox_viz;
         novo = aux;
         p = p->prox_viz;
     }
@@ -318,8 +318,8 @@ void printArticulations(TG *g, int total) {
 static void reachClusters(TG *G, int check) {
     printf(" %d", check);
     visit[check] = 1;
-    TNO *p = G->prim;
-    while (p->id_no != check) {
+    TNO* p = G -> prim;
+    while ((p) && p->id_no != check) {
         p = p->prox_no;
     }
     TViz *viz = p->prim_viz;
@@ -339,7 +339,7 @@ void printClusters(TG *g, int total) {
     }
 
     int count = 1;
-    for (int j = 1; j <= total; ++j) {
+    for (int j = 0; j < total; ++j) {
         if (!visit[j]) {
             printf("cluster %d:", count++);
             reachClusters(g, j);
@@ -400,16 +400,12 @@ void strongR(TG* grafo,int v,int sc[]){
 }
 
 void show_strong_components(TG* grafo,int sc[],int totaldeVertices){
-    Graphsct(grafo,sc,totaldeVertices);
     int iterator,gambiarra;
-    for(iterator = 0;iterator < totaldeVertices ;iterator++){
-        for (int i = 0; i <totaldeVertices ; ++i) {
-            if(sc[i] == iterator){
-                printf("%d ",i);
-                gambiarra++;
-            }
-            gambiarra++;
-            if(gambiarra < totaldeVertices) printf("\n");
+    gambiarra = Graphsct(grafo,sc,totaldeVertices);
+    for(iterator = 0;iterator < gambiarra ;iterator++){
+        for(int dh = 0 ;dh < totaldeVertices ; dh++){
+            if(sc[dh] == iterator) printf("%d ",dh);
         }
+        printf("\n");
     }
 }

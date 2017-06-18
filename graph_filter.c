@@ -31,12 +31,11 @@ int main() {
         insere_aresta(graph, from, to, 1);
         printf("%d %d\n", from, to);
     }
-    // int oriented = checkOrientation(aux, total_nodes);
 
-    // printBridges(graph,total_nodes);
-    int sc[100];
+    printBridges(graph,total_nodes);
+    int sc[1000];
 
-    int oriented = !checkOrientation(aux, total_nodes);
+    int oriented = checkOrientation(aux, total_nodes);
     int connected = graphStillConnected(graph, total_nodes);
 
     if (oriented) {
@@ -49,7 +48,6 @@ int main() {
             printClusters(graph, total_nodes);
         }
     }
-
     fclose(arq);
     free(aux);
 
