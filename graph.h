@@ -37,8 +37,4 @@ void libera(TG *g);
 
 // gamb
 
-int checkOrientation(int *values, int total_nodes);//
-
-int Graphsct(TG* grafo , int sc[],int totalVertices);
-
-void strongR(TG* grafo,int v,int sc[]);
+int checkOrientation(int *values, int total_nodes);
