@@ -65,10 +65,10 @@ void insere_aresta(TG *g, int id1, int id2, int custo) {
 void imprime(TG *g) {
     TNO *p = g->prim;
     while (p) {
-        printf("%d:\n", p->id_no);
+        printf("%d:\n", p->id_no+1);
         TViz *v = p->prim_viz;
         while (v) {
-            printf("viz: %d \t  custo:%d\n", v->id_viz, v->custo);
+            printf("viz: %d \t  custo:%d\n", v->id_viz+1, v->custo);
             v = v->prox_viz;
         }
         p = p->prox_no;
@@ -97,23 +97,38 @@ void retira_aresta(TG *g, int id1, int id2) {
 }
 
 void retira_no(TG *g, int id) {
-    TNO *p = g->prim, *ant = NULL;
-
+    TNO *p = g->prim, *ant = NULL ,*aux;
+    TViz *v;
     while ((p) && p->id_no != id) {
         ant = p;
+        v = p->prim_viz;
+        while (v) {
+            if(p->id_no == id){
+                v = p->prim_viz;
+                retira_aresta(g, id, v->id_viz);
+                v = p->prim_viz;
+            }
+
+            else if(v->id_viz == id){
+                retira_aresta(g,p->id_no,id);
+            }
+            v = v->prox_viz;
+        }
         p = p->prox_no;
     }
-
-    if (!p) return;
-
-    TViz *v = p->prim_viz;
-    while (v) {
-        retira_aresta(g, id, v->id_viz);
-        v = p->prim_viz;
+    aux = p->prox_no;
+    while(aux){
+        v = aux->prim_viz;
+        while(v){
+            if(v->id_viz == id)retira_aresta(g,aux->id_no,v->id_viz);
+            v = v->prox_viz;
+        }
+        aux = aux->prox_no;
     }
 
+
     if (!ant) {
-        g->prim = p->prox_no;
+        g->prim = p-> prox_no;
     } else {
         ant->prox_no = p->prox_no;
     }
@@ -165,7 +180,7 @@ int checkOrientation(int *values, int total_nodes) {
 static void reachR(TG *G, int check) {
     visit[check] = 1;
     TNO *p = G->prim;
-    while (p->id_no != check) {
+    while ((p) && p->id_no != check) {
         p = p->prox_no;
     }
     TViz *viz = p->prim_viz;
@@ -194,11 +209,14 @@ int graphStillConnected(TG *g, int total) {
     for (int i = 0; i < 1000; ++i) {
         visit[i] = 0;
     }
-    reachR(g, 0);
-    for (int j = 0; j < total; ++j) {
-        if (visit[j] == 0) {
+    TNO *p = g->prim;
+    reachR(g, p->id_no);
+
+    while(p){
+        if(visit[p->id_no] == 0){
             return 0;
         }
+        p = p->prox_no;
     }
     return 1;
 }
@@ -300,27 +318,41 @@ int graphStillConnectedForArticulation(TG *g, int total, int tested) {
     } else {
         reachArticulation(g, 0, tested);
     }
+
+    TNO *p = g->prim;
+    while(p){
+        if(visit[p->id_no] == 0 && p->id_no != tested)return 0;
+    }
+    /*
     for (int j = 0; j < total; j++) {
         if (visit[j] == 0 && j != tested) {
             return 0;
         }
     }
+     */
     return 1;
 }
 
 void printArticulations(TG *g, int total) {
+    TNO *p = g->prim;
+    while(p){
+        if(!graphStillConnectedForArticulation(g,total,p->id_no))printf("articulation point: %d\n", p->id_no + 1);
+        p = p->prox_no;
+    }
+    /*
     for (int i = 0; i < total; i++) {
         if (!graphStillConnectedForArticulation(g, total, i)) {
             printf("articulation point: %d\n", i + 1);
         }
     }
+     */
 }
 
 
 // gamb
 
 static void reachClusters(TG *G, int check) {
-    printf(" %d", check+1);
+    printf(" %d", check + 1);
     visit[check] = 1;
     TNO *p = G->prim;
     while ((p) && p->id_no != check) {
@@ -343,6 +375,17 @@ void printClusters(TG *g, int total) {
     }
 
     int count = 1;
+
+    TNO *p = g->prim;
+    while (p){
+        if(!visit[p->id_no]){
+            printf("cluster %d:", count++);
+            reachClusters(g, p->id_no);
+            printf("\n");
+        }
+        p=p->prox_no;
+    }
+    /*
     for (int j = 0; j < total; ++j) {
         if (!visit[j]) {
             printf("cluster %d:", count++);
@@ -350,6 +393,7 @@ void printClusters(TG *g, int total) {
             printf("\n");
         }
     }
+     */
 }
 
 
@@ -360,17 +404,23 @@ int Graphsct(TG *grafo, int sc[], int totalVertices) {
     low = malloc(totalVertices * sizeof(int));
     stack = malloc(totalVertices * sizeof(int));
 
-    for (v = 0; v < totalVertices; v++) {
-        pre[v] = sc[v] = -1;
+
+    TNO* p = grafo->prim;
+    while(p){
+        pre[p->id_no] = sc[p->id_no] = -1;
+        p = p->prox_no;
     }
     cnt = k = n = 0;
 
-    for (v = 0; v < totalVertices; v++) {
-        if (pre[v] == -1) {
-            pre[v] = v;
-            strongR(grafo, v, sc);
+    p = grafo->prim;
+
+    while (p){
+        if(pre[p->id_no] == -1){
+            strongR(grafo,p->id_no,sc);
         }
+        p = p -> prox_no;
     }
+
     free(pre);
     free(low);
     free(stack);
@@ -384,12 +434,12 @@ void strongR(TG *grafo, int v, int sc[]) {
     min = pre[v];
     stack[n++] = v;
     TNO *no = busca_no(grafo, v);
-    for (a = no-> prim_viz; a; a = a->prox_viz) {
+    for (a = no->prim_viz; a; a = a->prox_viz) {
         w = a->id_viz;
         if (pre[w] == -1) {
             strongR(grafo, w, sc);
             if (low[w] < min) min = low[w];
-        } else if (pre[w] < pre[v-1] && sc[w] == -1) {
+        } else if (pre[w] < pre[v] && sc[w] == -1) {
             if (pre[w] < min)min = pre[w];
         }
     }
@@ -405,11 +455,15 @@ void strongR(TG *grafo, int v, int sc[]) {
 
 void show_strong_components(TG *grafo, int sc[], int totaldeVertices) {
     int iterator, gambiarra;
+    TNO* no = grafo->prim;
     gambiarra = Graphsct(grafo, sc, totaldeVertices);
     for (iterator = 0; iterator < gambiarra; iterator++) {
-        for (int dh = 1; dh <= totaldeVertices; dh++) {
-            if (sc[dh-1] == iterator) printf("%d ", dh );
+        for (no = grafo->prim; no; no=no->prox_no) {
+            if (sc[no->id_no] == iterator) printf("%d ", no->id_no+1);
         }
         printf("\n");
+    }
+    for(int i = 0; i < 1000 ; i ++){
+        sc[i] = -1;
     }
 }
