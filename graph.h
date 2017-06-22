@@ -37,4 +37,4 @@ void libera(TG *g);
 
 // gamb
 
-int checkOrientation(int *values, int total_nodes);
+int checkOrientation(TG *g);

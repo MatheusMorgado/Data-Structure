@@ -42,7 +42,7 @@ int main() {
     while (option) {
         int sc[1000];
         imprime(graph);
-        int oriented = checkOrientation(aux, total_nodes);
+        int oriented = checkOrientation(graph);
         int connected = graphStillConnected(graph, total_nodes);
 
         if (oriented) {
@@ -100,8 +100,6 @@ int main() {
                 printf("Digite o vertice a ser buscado:\n");
                 scanf("%d", &x1);
                 busca_no(graph, x1-1);
-                break;
-            case 7:
                 break;
             default:
                 option = 0;

@@ -160,22 +160,27 @@ static int visit[1000] = {0};
 
 // gamb
 
-int checkOrientation(int *values, int total_nodes) {
-    int oriented = 0;
-    for (int j = 0; j < total_nodes; j++) {
-        if (values[j]) {
-            oriented = 1;
-            break;
+int checkOrientation(TG *g) {
+    if(!g || !g->prim){
+        return 0;
+    }
+    int visited[1000] = {0};
+    TNO *p = g->prim;
+    while (p) {
+        TViz *viz = p->prim_viz;
+        while (viz) {
+            if(!visited[viz->id_viz]) {
+                visited[viz->id_viz] = 1;
+                if (!busca_aresta(g, viz->id_viz, p->id_no)) {
+                    return 1;
+                }
+            }
+            viz = viz->prox_viz;
         }
+        p = p->prox_no;
     }
-    if (oriented) {
-        printf("orientado\n");
-    } else {
-        printf("nao orientado\n");
-    }
-    return oriented;
+    return 0;
 }
-
 
 static void reachR(TG *G, int check) {
     visit[check] = 1;
@@ -277,7 +282,7 @@ void printBridges(TG *g, int total) {
             int id_no = p->id_no;
             int id_viz = viz->id_viz;
             if (checkValidBridge(g, id_no, id_viz, total)) {
-                printf("bridge %d: %d -> %d\n", i, id_no + 1, id_viz + 1);
+                printf("bridge %d: %d - %d\n", i, id_no + 1, id_viz + 1);
                 i++;
             }
             viz = viz->prox_viz;
@@ -322,6 +327,7 @@ int graphStillConnectedForArticulation(TG *g, int total, int tested) {
     TNO *p = g->prim;
     while(p){
         if(visit[p->id_no] == 0 && p->id_no != tested)return 0;
+        p = p->prox_no;
     }
     /*
     for (int j = 0; j < total; j++) {
@@ -458,6 +464,7 @@ void show_strong_components(TG *grafo, int sc[], int totaldeVertices) {
     TNO* no = grafo->prim;
     gambiarra = Graphsct(grafo, sc, totaldeVertices);
     for (iterator = 0; iterator < gambiarra; iterator++) {
+        printf("Strong Component %d \n",iterator+1);
         for (no = grafo->prim; no; no=no->prox_no) {
             if (sc[no->id_no] == iterator) printf("%d ", no->id_no+1);
         }
